@@ -1,0 +1,37 @@
+name: Build Spigot
+
+on:
+  workflow_dispatch: # 手动触发
+  schedule:
+    - cron: '0 0 * * *' # 每天 00:00 UTC 自动触发
+
+jobs:
+  build-spigot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 'latest'
+          distribution: 'temurin'
+
+      - name: Download BuildTools
+        run: |
+          curl -o BuildTools.jar https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+
+      - name: Build Spigot
+        run: |
+          mkdir spigot_build
+          mv BuildTools.jar spigot_build/
+          cd spigot_build
+          java -jar BuildTools.jar --rev latest
+
+      - name: Upload Spigot Jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: spigot-latest
+          path: spigot_build/spigot*.jar
