@@ -13,10 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install jq for JSON parsing
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Fetch Latest Java Version
+        id: fetch-java-version
+        run: |
+          LATEST_JAVA_VERSION=$(curl -s https://api.adoptium.net/v3/info/available_releases | jq '.most_recent_lts')
+          echo "JAVA_VERSION=${LATEST_JAVA_VERSION}" >> $GITHUB_ENV
+          echo "Latest Java LTS Version: ${LATEST_JAVA_VERSION}"
+
       - name: Install Java
         uses: actions/setup-java@v3
         with:
-          java-version: 'latest'
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
       - name: Download BuildTools
